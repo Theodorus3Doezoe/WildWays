@@ -1,0 +1,177 @@
+﻿@page "/"
+@using BlazorMetTailwind.Components.Modals
+@using BlazorMetTailwind.Data 
+
+<PageTitle>Dieren</PageTitle>
+
+<div class="bg-black text-white p-6 h-screen">
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h1 class="text-xl">Dierenoverzicht</h1>
+        </div>
+        <button @onclick="ToggleZichtbaarheid" class="nav-text">+ Nieuw dier toevoegen</button>
+        
+        
+    </div>
+    <div class="flex gap-4 items-center">
+        <input @bind="zoekTerm" @bind:event="oninput" type="text" placeholder="Zoek dieren..." class="input-field" />
+        <select @bind="geselecteerdeLocatie" class="input-field">
+            <option selected value="Alles">Alle locaties</option>
+            <option value="Beekse Bergen">Beekse Bergen</option>
+            <option value="Artis">Artis</option>
+
+        </select>    
+        <select @bind="geselecteerdeGrootte" class="input-field">
+            <option selected value="Alles">Alle groottes</option>
+            <option value="Klein">Klein</option>
+            <option value="Middel">Middel</option>
+            <option value="Groot">Groot</option>
+        </select>  
+        <select @bind="geselecteerdeDieet" class="input-field">
+            <option selected value="Alles">Alle diëten</option>
+            <option value="Carnivoor">Carnivoor</option>
+            <option value="Herbivoor">Herbivoor</option>
+        </select>  
+        <label for="toggle" class="flex items-center cursor-pointer">
+        <div class="relative">
+            <input @bind="toonVerwijderdeDieren" type="checkbox" id="toggle" class="sr-only peer">            
+            <div class="block bg-gray-400 peer-checked:bg-gray-600 w-14 h-8 rounded-full transition"></div>
+            
+            <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-transform transform peer-checked:translate-x-6"></div>
+        </div>
+        
+        <div class="ml-3 text-gray-300 font-medium">
+            Verwijderde dieren tonen
+        </div>
+        </label>
+    </div>
+    <table class="w-full mt-4 table-auto border-collapse bg-[#1c2620] rounded-lg text-xl ">
+        <thead>
+            <tr>
+                <th class="p-3">Naam</th>
+                <th>Locatie</th>
+                <th>Grootte</th>
+                <th>Dieet</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var dier in GefilterdeDieren)
+            {
+                <tr class="">
+                    <td class="p-4">@dier.Naam</td>
+                    <td>@dier.Locatie</td>
+                    <td>@dier.Grootte</td>
+                    <td>@dier.Dieet</td>
+                    <td class="p-4">
+                        <button @onclick="() => ToonDetails(dier)" class="text-blue-400 cursor-pointer hover:text-blue-300 font-semibold">
+                            Details
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (isPopupZichtbaar)
+    {
+        <AddAnimal OnSubmit="@DierToegevoegd" OnCancel="ToggleZichtbaarheid" />    
+    }
+
+    @if (geselecteerdDier != null)
+    {
+        <AnimalDetails Dier="geselecteerdDier" OnClose="SluitDetails" OnDelete="SoftDeleteDier"/>
+    }
+
+</div>
+
+@code {
+    // Popup zichtbaarheid
+    private bool isPopupZichtbaar = false;
+
+    // Filter variabelen
+    private string geselecteerdeLocatie = "Alles";
+    private string geselecteerdeGrootte = "Alles";
+    private string geselecteerdeDieet = "Alles";
+    private bool toonVerwijderdeDieren = false;
+    private string zoekTerm = "";
+
+
+    private List<Dier> dierenLijst = new()
+    {
+        // Voorbeeldgegevens
+        new Dier { Naam = "Leo de Leeuw", Locatie = "Beekse Bergen", Grootte = "Groot", Dieet = "Carnivoor", Geboortedatum = new DateTime(2020, 5, 10), Geslacht = "Mannelijk" },
+        new Dier { Naam = "Ahmed de adder", Locatie = "Artis", Grootte = "Groot", Dieet = "Herbivoor", Geboortedatum = new DateTime(2022, 1, 20), Geslacht = "Vrouwelijk" }
+    };
+
+    public List<Dier> GefilterdeDieren
+    {
+        get
+        {
+            return dierenLijst.Where(dier =>
+                (string.IsNullOrEmpty(zoekTerm) || dier.Naam.ToLower().Contains(zoekTerm.ToLower())) &&
+                (geselecteerdeLocatie == "Alles" || dier.Locatie == geselecteerdeLocatie) &&
+
+                (geselecteerdeGrootte == "Alles" || dier.Grootte == geselecteerdeGrootte) &&
+
+                (geselecteerdeDieet == "Alles" || dier.Dieet == geselecteerdeDieet) && 
+                (toonVerwijderdeDieren || !dier.Deleted)
+            ).ToList();
+        }
+    }
+
+    private Dier geselecteerdDier;
+    private void ToonDetails(Dier dierOmTeTonen)
+    {
+        geselecteerdDier = dierOmTeTonen;
+    }
+
+    private void SluitDetails()
+    {
+        geselecteerdDier = null;
+    }
+
+    private void ToggleZichtbaarheid()
+    {
+        isPopupZichtbaar = !isPopupZichtbaar;
+    }
+
+    private void DierToegevoegd(Dier nieuwDier)    
+    {
+        bool naamBestaat = false;
+        
+
+        foreach (var dier in dierenLijst)
+        {
+            if (dier.Naam.Equals(nieuwDier.Naam, StringComparison.OrdinalIgnoreCase))
+            {
+                naamBestaat = true;
+                break;
+            }
+        }
+
+        if (naamBestaat)
+        {
+            Console.WriteLine($"De naam '{nieuwDier.Naam}' is al in gebruik. Kies een unieke naam.");
+            return;
+        } else 
+        {
+            dierenLijst.Add(nieuwDier);
+            isPopupZichtbaar = false;
+        }
+
+
+    }
+
+    private void SoftDeleteDier(Dier dierOmTeVerwijderen)
+    {
+        var dierInLijst = dierenLijst.FirstOrDefault(d => d.Naam == dierOmTeVerwijderen.Naam);
+
+        if (dierInLijst != null)
+        {
+            dierInLijst.Deleted = true;
+        }
+
+        SluitDetails();
+    }
+}

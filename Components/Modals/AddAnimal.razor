@@ -1,0 +1,84 @@
+@using System.ComponentModel.DataAnnotations 
+@using BlazorMetTailwind.Data 
+
+<div class="fixed inset-0 bg-black/60 z-40"></div>
+
+<div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-6 rounded-lg shadow-lg z-50 bg-[#1c2620]">
+    <h1>Nieuw dier toevoegen</h1>
+    <p>Vul de onderstaande gegevens in om een nieuw dier aan het systeem toe te voegen</p>
+
+    <div>
+        <EditForm Model="@invoerModel" OnValidSubmit="@HandleValidSubmit" FormName="naamFormulier" class="grid grid-cols-2 spacing-4 gap-4 my-4">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="flex flex-col">
+                <label for="name" class=" mb-2 text-sm font-medium text-gray-300">Naam</label>
+                <InputText @bind-Value="invoerModel.Naam" placeholder="Naam" class="input-field" aria-required="true"/>
+            </div>
+            <div class="flex flex-col">
+                <label for="grootte" class=" mb-2 text-sm font-medium text-gray-300">Grootte</label>
+                <InputSelect @bind-Value="invoerModel.Grootte" class="input-field">
+                    <option value="Klein">Kies een grootte...   </option>
+                    <option value="Klein">Klein</option>
+                    <option value="Middel">Middel</option>
+                    <option value="Groot">Groot</option>
+                </InputSelect>
+            </div>
+            <div class="flex flex-col">
+                <label for="geslacht">Geslacht</label>
+                <InputSelect @bind-Value="invoerModel.Geslacht" class="input-field">
+                    <option value="">Kies een geslacht...</option>
+                    <option value="Mannelijk">Mannelijk</option>
+                    <option value="Vrouwelijk">Vrouwelijk</option>
+                </InputSelect>
+            </div>
+            <div class="flex flex-col">
+                <label for="dieet">Dieet</label>
+                <InputSelect @bind-Value="invoerModel.Dieet" class="input-field">
+                    <option value="">Kies een dieet...</option>
+                    <option value="Carnivoor">Carnivoor</option>
+                    <option value="Herbivoor">Herbivoor</option>
+                </InputSelect>
+            </div>
+            <div class="flex flex-col">
+                <label for="birthdate">Geboortedatum</label>
+                <InputDate @bind-Value="invoerModel.Geboortedatum" class="input-field" />
+            </div>
+            <div class="flex flex-col">
+                <label for="locatie">Locatie</label>
+                <InputSelect @bind-Value="invoerModel.Locatie" class="input-field">
+                    <option value="">Kies een locatie...</option>
+                    <option value="Beekse bergen">Beekse bergen</option>
+                    <option value="Artis">Artis</option>
+                </InputSelect>
+            </div>
+            
+            <div class="flex justify-end gap-4 col-span-2">
+                <button type="button" @onclick="AnnuleerPopup" class="input-field hover:text-red-500">Annuleren</button>
+                <button type="submit" class="input-field bg-green-500 hover:bg-green-600">+ Dier toevoegen</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    [Parameter]
+    public EventCallback<Dier> OnSubmit { get; set; }
+
+    private async Task AnnuleerPopup()
+    {
+        await OnCancel.InvokeAsync();    
+    }
+
+    [SupplyParameterFromForm]
+    private Dier invoerModel { get; set; } = new();
+
+    private async Task HandleValidSubmit()
+    {        
+        await OnSubmit.InvokeAsync(invoerModel);
+    }
+}

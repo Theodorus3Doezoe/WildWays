@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@utility input-field {
+    @apply h-10 cursor-pointer appearance-none rounded-full border border-[#29382f] bg-[#1c2620] px-4 pr-8 text-sm hover:bg-[#2d3a31];
+
+    @variant focus {
+        @apply outline-none ring-white ring-1 border-white;
+    }
+}
+
+@utility nav-text {
+    @apply text-gray-400;
+
+    @variant hover {
+        @apply text-white transition-colors cursor-pointer;
+    }
+}
+
