@@ -1,6 +1,8 @@
 ﻿@page "/"
 @using BlazorMetTailwind.Components.Modals
 @using BlazorMetTailwind.Data 
+@using BlazorMetTailwind.Data
+@inject AnimalService AnimalService
 
 <PageTitle>Dieren</PageTitle>
 
@@ -96,25 +98,23 @@
     private bool toonVerwijderdeDieren = false;
     private string zoekTerm = "";
 
+    private List<Dier> dierenLijst;
 
-    private List<Dier> dierenLijst = new()
+    protected override void OnInitialized()
     {
-        // Voorbeeldgegevens
-        new Dier { Naam = "Leo de Leeuw", Locatie = "Beekse Bergen", Grootte = "Groot", Dieet = "Carnivoor", Geboortedatum = new DateTime(2020, 5, 10), Geslacht = "Mannelijk" },
-        new Dier { Naam = "Ahmed de adder", Locatie = "Artis", Grootte = "Groot", Dieet = "Herbivoor", Geboortedatum = new DateTime(2022, 1, 20), Geslacht = "Vrouwelijk" }
-    };
-
+        dierenLijst = AnimalService.GetDieren();
+    }
     public List<Dier> GefilterdeDieren
     {
         get
         {
+            if (dierenLijst == null) return new List<Dier>();
+            
             return dierenLijst.Where(dier =>
                 (string.IsNullOrEmpty(zoekTerm) || dier.Naam.ToLower().Contains(zoekTerm.ToLower())) &&
                 (geselecteerdeLocatie == "Alles" || dier.Locatie == geselecteerdeLocatie) &&
-
                 (geselecteerdeGrootte == "Alles" || dier.Grootte == geselecteerdeGrootte) &&
-
-                (geselecteerdeDieet == "Alles" || dier.Dieet == geselecteerdeDieet) && 
+                (geselecteerdeDieet == "Alles" || dier.Dieet == geselecteerdeDieet) &&
                 (toonVerwijderdeDieren || !dier.Deleted)
             ).ToList();
         }
@@ -136,42 +136,19 @@
         isPopupZichtbaar = !isPopupZichtbaar;
     }
 
-    private void DierToegevoegd(Dier nieuwDier)    
+    private void DierToegevoegd(Dier nieuwDier)
     {
-        bool naamBestaat = false;
-        
+        bool isGelukt = AnimalService.AddDier(nieuwDier);
 
-        foreach (var dier in dierenLijst)
+        if (isGelukt)
         {
-            if (dier.Naam.Equals(nieuwDier.Naam, StringComparison.OrdinalIgnoreCase))
-            {
-                naamBestaat = true;
-                break;
-            }
-        }
-
-        if (naamBestaat)
-        {
-            Console.WriteLine($"De naam '{nieuwDier.Naam}' is al in gebruik. Kies een unieke naam.");
-            return;
-        } else 
-        {
-            dierenLijst.Add(nieuwDier);
             isPopupZichtbaar = false;
         }
-
-
     }
 
     private void SoftDeleteDier(Dier dierOmTeVerwijderen)
     {
-        var dierInLijst = dierenLijst.FirstOrDefault(d => d.Naam == dierOmTeVerwijderen.Naam);
-
-        if (dierInLijst != null)
-        {
-            dierInLijst.Deleted = true;
-        }
-
+        AnimalService.SoftDeleteDier(dierOmTeVerwijderen);
         SluitDetails();
     }
 }

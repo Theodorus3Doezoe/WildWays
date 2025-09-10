@@ -1,3 +1,73 @@
 @page "/wagon"
+@using BlazorMetTailwind.Data
+@inject AnimalService AnimalService
 
-<PageTitle>Wagon</PageTitle>
+<PageTitle>Wagon Indeling</PageTitle>
+
+<div class="bg-black text-white p-6 h-screen">
+    <h1 class="text-2xl font-bold mb-4">Trein Indeling</h1>
+
+    @if (wagons == null || !wagons.Any())
+    {
+        <p class="text-gray-400">Er zijn geen dieren om in te delen of alle wagons zijn leeg.</p>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (int i = 0; i < wagons.Count; i++)
+            {
+                var wagon = wagons[i];
+                var wagonNummer = i + 1;
+                var huidigeCapaciteit = wagon.Sum(dier => GetSizeValue(dier));
+
+                <div class="bg-[#1c2620] p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-xl font-semibold">Wagon @wagonNummer</h2>
+                        <span class="text-sm font-mono bg-gray-700 px-2 py-1 rounded">@huidigeCapaciteit / 10</span>
+                    </div>
+                    
+                    @if (!wagon.Any())
+                    {
+                        <p class="text-gray-500">Deze wagon is leeg.</p>
+                    }
+                    else
+                    {
+                        <ul class="space-y-2">
+                            @foreach (var dier in wagon)
+                            {
+                                <li class="flex items-center gap-3 p-2 bg-[#2a3b31] rounded">
+                                    <span class="font-medium text-lg">@dier.Naam</span>
+                                    <span class="text-xs text-gray-400">(@dier.Grootte, @dier.Dieet)</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+</div>
+
+
+@code {
+    private List<List<Dier>> wagons;
+
+    protected override void OnInitialized()
+    {
+        // Roep de sorteerfunctie aan uit de service
+        wagons = AnimalService.ArrangeAnimalsInWagons();
+    }
+
+    // Deze functie is hier alleen nodig voor de weergave van de capaciteit
+    private int GetSizeValue(Dier dier)
+    {
+        return dier.Grootte switch
+        {
+            "Klein" => 1,
+            "Middel" => 3,
+            "Groot" => 5,
+            _ => 0,
+        };
+    }
+}
