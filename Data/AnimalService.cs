@@ -1,5 +1,5 @@
+// In BlazorMetTailwind/Data/AnimalService.cs
 namespace BlazorMetTailwind.Data
-
 {
     public class AnimalService
     {
@@ -10,22 +10,22 @@ namespace BlazorMetTailwind.Data
             new Dier { Naam = "Ahmed de Adder", Locatie = "Artis", Grootte = "Middel", Dieet = "Carnivoor", Geboortedatum = new DateTime(2022, 1, 20), Geslacht = "Mannelijk" },
             new Dier { Naam = "Zoe de Zebra", Locatie = "Beekse Bergen", Grootte = "Middel", Dieet = "Herbivoor", Geboortedatum = new DateTime(2019, 8, 1), Geslacht = "Vrouwelijk" },
             new Dier { Naam = "Mimi de Muis", Locatie = "Artis", Grootte = "Klein", Dieet = "Herbivoor", Geboortedatum = new DateTime(2023, 3, 15), Geslacht = "Vrouwelijk" },
-            new Dier { Naam = "Elly de Olifant", Locatie = "Beekse Bergen", Grootte = "Groot", Dieet = "Herbivoor", Geboortedatum = new DateTime(2015, 11, 2), Geslacht = "Vrouwelijk" }
+            new Dier { Naam = "Elly de Olifant", Locatie = "Beekse Bergen", Grootte = "Groot", Dieet = "Herbivoor", Geboortedatum = new DateTime(2015, 11, 2), Geslacht = "Vrouwelijk" },
+            new Dier { Naam = "Carla de Carnivoor", Locatie = "Artis", Grootte = "Klein", Dieet = "Carnivoor", Geboortedatum = new DateTime(2023, 1, 1), Geslacht = "Vrouwelijk" },
+            new Dier { Naam = "Hennie de Herbivoor", Locatie = "Beekse Bergen", Grootte = "Middel", Dieet = "Herbivoor", Geboortedatum = new DateTime(2022, 1, 1), Geslacht = "Mannelijk" }
         };
 
         public List<Dier> GetDieren() => _dierenLijst;
 
         public bool AddDier(Dier nieuwDier)
         {
-            // Controleer of de naam al bestaat (hoofdletterongevoelig)
             if (_dierenLijst.Any(d => d.Naam.Equals(nieuwDier.Naam, StringComparison.OrdinalIgnoreCase)))
             {
                 Console.WriteLine($"De naam '{nieuwDier.Naam}' is al in gebruik.");
-                return false; 
+                return false;
             }
-
             _dierenLijst.Add(nieuwDier);
-            return true; 
+            return true;
         }
         public void SoftDeleteDier(Dier dierOmTeVerwijderen)
         {
@@ -38,39 +38,30 @@ namespace BlazorMetTailwind.Data
 
         private int GetSizeValue(Dier dier)
         {
-            if (dier.Grootte == "Klein")
+            return dier.Grootte switch
             {
-                return 1;
-            }
-            else if (dier.Grootte == "Middel")
-            {
-                return 3;
-            }
-            else if (dier.Grootte == "Groot")
-            {
-                return 5;
-            }
-            else
-            {
-                return 0;
-            }
+                "Klein" => 1,
+                "Middel" => 3,
+                "Groot" => 5,
+                _ => 0,
+            };
         }
-
-        private bool CanAddAnimalToWagon(Dier nieuwDier, List<Dier> wagon)
+        
+        private bool CanAddAnimalToNormalWagon(Dier nieuwDier, List<Dier> dierenInWagon)
         {
             if (nieuwDier.Dieet == "Carnivoor")
             {
-                foreach (var aanwezigDier in wagon)
+                foreach (var aanwezigDier in dierenInWagon)
                 {
                     if (GetSizeValue(aanwezigDier) >= GetSizeValue(nieuwDier))
                     {
-                        return false; 
+                        return false;
                     }
                 }
             }
             else // Herbivoor
             {
-                foreach (var aanwezigDier in wagon)
+                foreach (var aanwezigDier in dierenInWagon)
                 {
                     if (aanwezigDier.Dieet == "Carnivoor" && GetSizeValue(aanwezigDier) >= GetSizeValue(nieuwDier))
                     {
@@ -81,49 +72,90 @@ namespace BlazorMetTailwind.Data
             return true;
         }
 
-        public List<List<Dier>> ArrangeAnimalsInWagons()
+        private bool CanAddAnimalToExpWagon(Dier nieuwDier, Wagon wagon)
         {
-            const int maxWagonCapacity = 10;
-            var wagons = new List<List<Dier>>();
+            if (nieuwDier.Grootte is "Groot") return false;
+            if (wagon.Dieren.Count >= 2) return false;
+            if (!wagon.Dieren.Any()) return true;
+
+            var bestaandDier = wagon.Dieren.First();
             
+            if (bestaandDier.Dieet == "Carnivoor" && nieuwDier.Dieet == "Carnivoor") return true;
+
+            if ((bestaandDier.Dieet == "Carnivoor" && nieuwDier.Dieet == "Herbivoor") ||
+                (bestaandDier.Dieet == "Herbivoor" && nieuwDier.Dieet == "Carnivoor")) return true;
+
+            return false;
+        }
+
+        public List<Wagon> ArrangeAnimalsInWagons()
+        {
+            const int maxNormalWagonCapacity = 10;
+            const int maxExperimentalWagons = 4;
+            
+            var wagons = new List<Wagon>(); 
+            var experimentalWagonsCount = 0;
+
             var gesorteerdeDieren = _dierenLijst
-                .Where(d => !d.Deleted) 
+                .Where(d => !d.Deleted)
                 .OrderByDescending(d => d.Dieet == "Carnivoor")
                 .ThenByDescending(d => GetSizeValue(d))
                 .ToList();
 
             if (!gesorteerdeDieren.Any())
             {
-                return wagons; 
+                return wagons;
             }
-
-            var huidigeWagon = new List<Dier>();
-            int huidigeCapaciteit = 0;
-            wagons.Add(huidigeWagon);
 
             foreach (var dier in gesorteerdeDieren)
             {
+                bool geplaatst = false;
                 int dierGrootte = GetSizeValue(dier);
 
-                bool geplaatst = false;
-                foreach (var wagon in wagons)
+                // 1. Check bestaande experimentele wagons
+                foreach (var expWagon in wagons.Where(w => w.IsExperimental))
                 {
-                    int wagonCapaciteit = wagon.Sum(GetSizeValue);
-                    if (CanAddAnimalToWagon(dier, wagon) && (wagonCapaciteit + dierGrootte) <= maxWagonCapacity)
+                    if (CanAddAnimalToExpWagon(dier, expWagon))
                     {
-                        wagon.Add(dier);
+                        expWagon.Dieren.Add(dier);
                         geplaatst = true;
                         break;
                     }
                 }
+                if (geplaatst) continue;
 
-                if (!geplaatst)
+                // 2. Check bestaande normale wagons
+                foreach (var normalWagon in wagons.Where(w => !w.IsExperimental))
                 {
-                    var nieuweWagon = new List<Dier> { dier };
-                    wagons.Add(nieuweWagon);
+                    if (CanAddAnimalToNormalWagon(dier, normalWagon.Dieren) && (normalWagon.HuidigeCapaciteit + dierGrootte) <= maxNormalWagonCapacity)
+                    {
+                        normalWagon.Dieren.Add(dier);
+                        geplaatst = true;
+                        break;
+                    }
+                }
+                if (geplaatst) continue;
+                
+                // 3. Maak nieuwe experimentele wagon aan (indien mogelijk)
+                var isEligibleForExpWagon = dier.Grootte is "Klein" or "Middel";
+                if (isEligibleForExpWagon && experimentalWagonsCount < maxExperimentalWagons)
+                {
+                    var nieuweExpWagon = new Wagon { IsExperimental = true };
+                    nieuweExpWagon.Dieren.Add(dier);
+                    wagons.Add(nieuweExpWagon);
+                    experimentalWagonsCount++;
+                    geplaatst = true;
+                }
+                if (geplaatst) continue;
+
+                // 4. Maak nieuwe normale wagon aan
+                var nieuweNormaleWagon = new Wagon { IsExperimental = false };
+                if ((nieuweNormaleWagon.HuidigeCapaciteit + dierGrootte) <= maxNormalWagonCapacity)
+                {
+                    nieuweNormaleWagon.Dieren.Add(dier);
+                    wagons.Add(nieuweNormaleWagon);
                 }
             }
-            
             return wagons;
         }
     }
