@@ -18,24 +18,37 @@
             {
                 var wagon = wagons[i];
                 var wagonNummer = i + 1;
-                var huidigeCapaciteit = wagon.Sum(dier => GetSizeValue(dier));
+                
+                var wagonBgColor = wagon.IsExperimental ? "bg-[#2a203d]" : "bg-[#1c2620]";
+                var headerTextColor = wagon.IsExperimental ? "text-purple-300" : "text-white";
+                var itemBgColor = wagon.IsExperimental ? "bg-[#4a3d5f]" : "bg-[#2a3b31]";
 
-                <div class="bg-[#1c2620] p-4 rounded-lg">
+                <div class="@wagonBgColor p-4 rounded-lg shadow-lg">
                     <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl font-semibold">Wagon @wagonNummer</h2>
-                        <span class="text-sm font-mono bg-gray-700 px-2 py-1 rounded">@huidigeCapaciteit / 10</span>
+                        <h2 class="text-xl font-semibold @headerTextColor">
+                            Wagon @wagonNummer 
+                            @if (wagon.IsExperimental)
+                            {
+                                <span class="text-sm font-normal align-middle">(Experimenteel)</span>
+                            }
+                        </h2>
+                        
+                        @if (!wagon.IsExperimental)
+                        {
+                            <span class="text-sm font-mono bg-gray-700 px-2 py-1 rounded">@wagon.HuidigeCapaciteit / 10</span>
+                        }
                     </div>
                     
-                    @if (!wagon.Any())
+                    @if (!wagon.Dieren.Any())
                     {
                         <p class="text-gray-500">Deze wagon is leeg.</p>
                     }
                     else
                     {
                         <ul class="space-y-2">
-                            @foreach (var dier in wagon)
+                            @foreach (var dier in wagon.Dieren)
                             {
-                                <li class="flex items-center gap-3 p-2 bg-[#2a3b31] rounded">
+                                <li class="flex items-center gap-3 p-2 @itemBgColor rounded">
                                     <span class="font-medium text-lg">@dier.Naam</span>
                                     <span class="text-xs text-gray-400">(@dier.Grootte, @dier.Dieet)</span>
                                 </li>
@@ -46,28 +59,14 @@
             }
         </div>
     }
-
 </div>
 
 
 @code {
-    private List<List<Dier>> wagons;
+    private List<Wagon> wagons;
 
     protected override void OnInitialized()
     {
-        // Roep de sorteerfunctie aan uit de service
         wagons = AnimalService.ArrangeAnimalsInWagons();
-    }
-
-    // Deze functie is hier alleen nodig voor de weergave van de capaciteit
-    private int GetSizeValue(Dier dier)
-    {
-        return dier.Grootte switch
-        {
-            "Klein" => 1,
-            "Middel" => 3,
-            "Groot" => 5,
-            _ => 0,
-        };
     }
 }
