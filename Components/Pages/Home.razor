@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using BlazorMetTailwind.Components.Modals
-@using BlazorMetTailwind.Data 
-@using BlazorMetTailwind.Data
+@using BlazorMetTailwind.Models
+@using BlazorMetTailwind.Services
 @inject AnimalService AnimalService
 
 <PageTitle>Dieren</PageTitle>
@@ -9,7 +9,7 @@
 <div class="bg-black text-white p-6 h-screen">
     <div class="flex justify-between items-center mb-4">
         <div>
-            <h1 class="text-xl">Dierenoverzicht</h1>
+            <h1 class="text-xl">Dierenoverzicht</h1>    
         </div>
         <button @onclick="ToggleZichtbaarheid" class="nav-text">+ Nieuw dier toevoegen</button>
         
@@ -23,7 +23,7 @@
             <option value="Artis">Artis</option>
 
         </select>    
-        <select @bind="geselecteerdeGrootte" class="input-field">
+        <select @bind="geselecteerdeGrootte" class="input-field ">
             <option selected value="Alles">Alle groottes</option>
             <option value="Klein">Klein</option>
             <option value="Middel">Middel</option>

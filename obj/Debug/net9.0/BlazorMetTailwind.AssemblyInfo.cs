@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BlazorMetTailwind")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f9817396aecf99140c5b563b77047eede75f3365")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ba4a2e7c8ba115526d562eafd833ae978595aeb2")]
 [assembly: System.Reflection.AssemblyProductAttribute("BlazorMetTailwind")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BlazorMetTailwind")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

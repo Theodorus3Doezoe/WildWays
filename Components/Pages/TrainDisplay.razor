@@ -1,6 +1,8 @@
 @page "/wagon"
-@using BlazorMetTailwind.Data
+@using BlazorMetTailwind.Models
+@using BlazorMetTailwind.Services
 @inject AnimalService AnimalService
+@inject WagonService WagonService
 
 <PageTitle>Wagon Indeling</PageTitle>
 
@@ -67,6 +69,10 @@
 
     protected override void OnInitialized()
     {
-        wagons = AnimalService.ArrangeAnimalsInWagons();
+        // 1. Haal de lijst van dieren op
+        var alleDieren = AnimalService.GetDieren();
+
+        // 2. Gebruik de WagonService om de dieren in wagons te delen
+        wagons = WagonService.DeelDierenIn(alleDieren);
     }
 }

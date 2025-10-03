@@ -148,3 +148,5 @@ C:\Users\svend\WildWays\obj\Debug\net9.0\BlazorMetTailwind.pdb
 C:\Users\svend\WildWays\obj\Debug\net9.0\BlazorMetTailwind.genruntimeconfig.cache
 C:\Users\svend\WildWays\obj\Debug\net9.0\ref\BlazorMetTailwind.dll
 C:\Users\svend\WildWays\obj\Debug\net9.0\compressed\f7xq1tl30p-o2vibtsfjy.gz
+C:\Users\svend\Fontys\BlazorMetTailwind\obj\Debug\net9.0\BlazorMetTailwind.sourcelink.json
+C:\Users\svend\Fontys\BlazorMetTailwind\obj\Debug\net9.0\compressed\f7xq1tl30p-uxtqc1ksf1.gz

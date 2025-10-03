@@ -1,5 +1,6 @@
 using BlazorMetTailwind.Components;
-using BlazorMetTailwind.Data;
+using BlazorMetTailwind.Services;
+using BlazorMetTailwind.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -7,6 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AnimalService>();
+builder.Services.AddSingleton<WagonService>();
 
 var app = builder.Build();
 
